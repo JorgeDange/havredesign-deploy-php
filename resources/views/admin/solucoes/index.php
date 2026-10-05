@@ -80,7 +80,7 @@ $total        = count($solucoes);
                   Editar
                 </a>
                 <form method="POST" action="<?= e($urlApagar) ?>" class="inline"
-                      onsubmit="return confirm('Apagar a solução «<?= e($solucao['name']) ?>»? Esta ação não pode ser desfeita.');">
+                      data-confirm="Apagar a solução «<?= e($solucao['name']) ?>»? Esta ação não pode ser desfeita." data-confirm-acao="Apagar">
                   <?= csrf_campo() ?>
                   <button type="submit"
                           class="inline-block px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-xs font-medium hover:bg-destructive/10 transition-colors">

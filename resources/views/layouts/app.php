@@ -46,8 +46,8 @@ $utilizador = utilizador();
     };
   </script>
 
-  <link rel="stylesheet" href="<?= asset('css/tailwind.css') ?>?v=2">
-  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=2">
+  <link rel="stylesheet" href="<?= asset('css/tailwind.css') ?>?v=3">
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=3">
   <link rel="icon" href="<?= asset('favicon.png') ?>" sizes="any">
   <link rel="icon" href="<?= asset('icon.png') ?>" type="image/png">
   <link rel="apple-touch-icon" href="<?= asset('apple-icon.png') ?>">
@@ -73,7 +73,7 @@ $utilizador = utilizador();
   <?= \App\Core\View::parcial('partials/footer') ?>
   <?= \App\Core\View::parcial('partials/whatsapp') ?>
 
-  <script src="<?= asset('js/app.js') ?>?v=2" defer></script>
+  <script src="<?= asset('js/app.js') ?>?v=3" defer></script>
   <?php \App\Core\View::sec('scripts'); ?>
 </body>
 </html>

@@ -210,6 +210,115 @@ a.btn-animate:active {
 }
 
 /* ==========================================================================
+   DIÁLOGOS PERSONALIZADOS — substituem alert()/confirm() nativos
+   ========================================================================== */
+.hd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 37, 63, 0.55);
+  animation: hdFadeIn 0.18s ease-out;
+}
+.hd-dialogo {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.5);
+  box-shadow: 0 25px 50px -12px rgba(15, 37, 63, 0.35);
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  animation: hdPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hd-dialogo__icone {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hd-dialogo__icone svg { width: 1.5rem; height: 1.5rem; }
+.hd-dialogo__icone--perigo    { background: rgba(239, 68, 68, 0.12); color: var(--destructive); }
+.hd-dialogo__icone--primario  { background: rgba(15, 37, 63, 0.10); color: var(--primary); }
+.hd-dialogo__icone--sucesso   { background: rgba(16, 185, 129, 0.12); color: #10B981; }
+.hd-dialogo__titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.hd-dialogo__mensagem {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  overflow-wrap: break-word;
+}
+.hd-dialogo__acoes {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.hd-botao {
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.hd-botao:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.hd-botao--fantasma {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.hd-botao--fantasma:hover { background: var(--muted); }
+.hd-botao--primario {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.hd-botao--primario:hover { opacity: 0.9; }
+.hd-botao--perigo {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+.hd-botao--perigo:hover { filter: brightness(0.95); }
+
+@keyframes hdFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes hdPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Ecrãs estreitos: botões em coluna (dois botões lado a lado rebentava 320px) */
+@media (max-width: 480px) {
+  .hd-dialogo__acoes { flex-direction: column-reverse; }
+  .hd-botao { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hd-overlay, .hd-dialogo { animation: none; }
+}
+
+
+/* ==========================================================================
    PAGE LOADER — ecrã de carregamento com o logótipo
    ========================================================================== */
 .page-loader {

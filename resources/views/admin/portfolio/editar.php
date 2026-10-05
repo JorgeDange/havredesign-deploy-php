@@ -199,7 +199,7 @@ $destacado  = (string) (int) ($projeto['featured'] ?? 0);
             <span class="text-xs text-muted-foreground">N.º <?= e($imagem['sort_order']) ?></span>
             <form method="POST"
                   action="<?= e($prefixo . '/galeria/' . rawurlencode((string) $imagem['id']) . '/apagar') ?>"
-                  onsubmit="return confirm('Apagar esta imagem da galeria? Esta ação não pode ser anulada.');">
+                  data-confirm="Apagar esta imagem da galeria? Esta ação não pode ser anulada." data-confirm-acao="Apagar">
               <?= csrf_campo() ?>
               <button type="submit"
                       class="px-2 py-1 rounded-md border border-destructive/30 text-destructive text-xs font-medium hover:bg-destructive/10 transition-colors">

@@ -64,7 +64,7 @@ $euId           = utilizador() !== null ? (string) (utilizador()['id'] ?? '') : 
                 <span class="text-xs font-medium text-muted-foreground">Si próprio</span>
               <?php else: ?>
                 <form method="POST" action="<?= e($rotaBase . '/' . rawurlencode($idLinha) . '/papel') ?>" class="inline"
-                      onsubmit="return confirm('Deseja alterar o papel deste utilizador?');">
+                      data-confirm="Deseja alterar o papel deste utilizador?" data-confirm-tipo="primario" data-confirm-acao="Alterar">
                   <?= csrf_campo() ?>
                   <button type="submit"
                           class="px-3 py-1.5 text-xs font-medium border border-border rounded-md text-foreground hover:bg-muted transition-colors">

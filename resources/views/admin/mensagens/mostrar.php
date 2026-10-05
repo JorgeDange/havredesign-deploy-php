@@ -114,7 +114,7 @@ $statusActual = (string) (velho('status', (string) $mensagem['status']) ?: $mens
       <p class="text-xs text-muted-foreground mb-4">Esta ação não pode ser desfeita.</p>
 
       <form method="POST" action="<?= e($rotaUm . '/apagar') ?>"
-            onsubmit="return confirm('Apagar esta mensagem? Esta ação não pode ser desfeita.')">
+            data-confirm="Apagar esta mensagem? Esta ação não pode ser desfeita." data-confirm-acao="Apagar">
         <?= csrf_campo() ?>
         <button type="submit" class="w-full px-6 py-2.5 border border-destructive/40 text-destructive text-sm font-medium rounded-md hover:bg-destructive/10 transition-colors">
           Apagar mensagem

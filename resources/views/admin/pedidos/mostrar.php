@@ -237,7 +237,7 @@ $statusActual = (string) (velho('status', (string) $pedido['status']) ?: $pedido
       <p class="text-xs text-muted-foreground mb-4">Remove o pedido e os seus anexos. Esta ação não pode ser desfeita.</p>
 
       <form method="POST" action="<?= e($rotaUm . '/apagar') ?>"
-            onsubmit="return confirm('Apagar este pedido e todos os anexos? Esta ação não pode ser desfeita.')">
+            data-confirm="Apagar este pedido e todos os anexos? Esta ação não pode ser desfeita." data-confirm-acao="Apagar">
         <?= csrf_campo() ?>
         <button type="submit" class="w-full px-6 py-2.5 border border-destructive/40 text-destructive text-sm font-medium rounded-md hover:bg-destructive/10 transition-colors">
           Apagar pedido

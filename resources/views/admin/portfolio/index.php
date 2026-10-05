@@ -93,7 +93,7 @@ $totalProjetos = count($projetos);
                   Editar
                 </a>
                 <form method="POST" action="<?= e($urlApagar) ?>" class="inline"
-                      onsubmit="return confirm('Apagar o projeto «<?= e($projeto['title']) ?>»? Será removido do portefólio e não pode ser anulado.');">
+                      data-confirm="Apagar o projeto «<?= e($projeto['title']) ?>»? Será removido do portefólio e não pode ser anulado." data-confirm-acao="Apagar">
                   <?= csrf_campo() ?>
                   <button type="submit"
                           class="inline-block px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-xs font-medium hover:bg-destructive/10 transition-colors">

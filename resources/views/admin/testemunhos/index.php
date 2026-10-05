@@ -84,7 +84,7 @@ $rotaBase     = rota('admin.testemunhos');
                   Editar
                 </a>
                 <form method="POST" action="<?= e($rotaBase . '/' . rawurlencode($idTest) . '/apagar') ?>" class="inline"
-                      onsubmit="return confirm('Apagar o testemunho de «<?= e($testemunho['name']) ?>»? Esta acção não pode ser desfeita.');">
+                      data-confirm="Apagar o testemunho de «<?= e($testemunho['name']) ?>»? Esta acção não pode ser desfeita." data-confirm-acao="Apagar">
                   <?= csrf_campo() ?>
                   <button type="submit"
                           class="inline-block px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-xs font-medium hover:bg-destructive/10 transition-colors">
