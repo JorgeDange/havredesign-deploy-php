@@ -1,0 +1,35 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Dependencias/vendor do projecto Laravel antigo (referencia)
+backend/
+node_modules/
+
+# Mockups de design (referencia — nao vai para o deploy)
+ui/
+
+# Logs e cache
+storage/logs/*
+storage/cache/*
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+
+# Anexos de testes locais (pedidos privados)
+storage/app/private/requests/*
+
+# Uploads de utilizadores (mas as imagens de servico do conteudo vao no deploy)
+storage/uploads/*
+!storage/uploads/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/servicos/
+
+# Backups da BD (contem hashes/dados pessoais — subir so para a hosting)
+database/backup-*.sql
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

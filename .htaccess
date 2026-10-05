@@ -1,0 +1,30 @@
+# .htaccess da RAIZ — redireciona tudo para public/
+# O DocumentRoot aponta para a raiz; a app vive em public/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # ------------------------------------------------------------------
+    # 1) Bloquear acesso directo a pastas/ficheiros internos da app
+    #    (defesa em profundidade — antes de qualquer reescrita)
+    # ------------------------------------------------------------------
+    RewriteRule ^(app|config|routes|resources|database|storage|tests|backend|ui)(/|$) - [F,L]
+    RewriteRule ^router\.php$ - [F,L]
+
+    # ------------------------------------------------------------------
+    # 2) Redirecionar o resto para public/ (front controller + assets)
+    # ------------------------------------------------------------------
+    # Já dentro de public/? não fazer nada
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+
+    # Ficheiros da raiz que existem servem-se; o resto vai a public/
+    RewriteCond %{REQUEST_URI} ^/(index\.php)?$ [OR]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Nunca servir ficheiros sensíveis da raiz
+<FilesMatch "^(composer\.(json|lock)|\.env.*|\.git.*|.*\.md|artisan|phpunit\.xml|router\.php)$">
+    Require all denied
+</FilesMatch>

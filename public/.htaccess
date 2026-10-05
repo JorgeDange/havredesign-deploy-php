@@ -1,0 +1,23 @@
+# public/.htaccess — URLs amigáveis
+# Tudo o que não seja ficheiro nem pasta real → index.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquear acesso directo a pastas sensíveis (defesa em profundidade)
+    RewriteRule ^(app|config|routes|storage|database|resources|tests)/ - [F,L]
+
+    # Ficheiros e pastas reais servem-se tal como estão
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # O resto passa ao front controller
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Sem direct listing de pastas
+Options -Indexes
+
+# Sem MIME sniffing (redundante com o header, mas barato)
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
