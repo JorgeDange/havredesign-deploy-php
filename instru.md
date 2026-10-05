@@ -26,7 +26,7 @@
 Ficheiro já gerado:
 
 ```
-database/backup-havre-design-2026-10-05.sql   (~193 KB, 23 tabelas, MariaDB 10.4)
+database/backup-havre-design-2026-10-05.sql   (~97 KB, 23 tabelas, MariaDB 10.4, UTF-8)
 ```
 
 Conteúdo: estrutura + dados (5 projectos publicados, 10 servicos, 5 HAVRE Solucoes, 20 definicoes, 36 redirects, 2 utilizadores, 1 mensagem de contacto, 1 agendamento).
@@ -34,7 +34,14 @@ Conteúdo: estrutura + dados (5 projectos publicados, 10 servicos, 5 HAVRE Soluc
 Para gerar um backup novo:
 
 ```bash
+# Linux/bash (terminal da hosting):
 mysqldump --user=UTILIZADOR --password --single-transaction --routines --triggers --default-character-set=utf8mb4 NOME_DA_BD > backup.sql
+```
+
+```powershell
+# Windows/PowerShell — NUNCA usar '>' directamente (grava em UTF-16 e o
+# import fica com texto distorcido). Usar cmd para bytes crus:
+cmd /c "mysqldump --user=root --single-transaction --routines --triggers --default-character-set=utf8mb4 havre_design > backup.sql"
 ```
 
 ---
@@ -96,8 +103,14 @@ No **phpMyAdmin** da hosting:
 
 1. Seleccionar a BD criada → separador **Importar**
 2. Escolher `database/backup-havre-design-2026-10-05.sql`
-3. Codificacao: **UTF-8** → Executar
+3. **Charset do ficheiro: UTF-8** → Executar
 4. Confirmar **23 tabelas**
+5. Verificar os dados (se aparecer `Localiza├º├úo` = ficheiro em UTF-16, repetir com o backup correcto):
+
+```sql
+SELECT title FROM services LIMIT 1;
+-- esperado: Croqui de Localização
+```
 
 ### Passo 3 — Upload dos ficheiros
 
