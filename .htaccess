@@ -6,8 +6,11 @@
     # ------------------------------------------------------------------
     # 1) Bloquear acesso directo a pastas/ficheiros internos da app
     #    (defesa em profundidade — antes de qualquer reescrita)
+    #    NOTA: storage/portfolio/ via URL mapeia para public/storage/
+    #    (imagens dos projectos) — so bloquear o resto de storage/
     # ------------------------------------------------------------------
-    RewriteRule ^(app|config|routes|resources|database|storage|tests|backend|ui)(/|$) - [F,L]
+    RewriteRule ^(app|config|routes|resources|database|tests|backend|ui)(/|$) - [F,L]
+    RewriteRule ^storage/(?!portfolio/) - [F,L]
     RewriteRule ^router\.php$ - [F,L]
 
     # ------------------------------------------------------------------

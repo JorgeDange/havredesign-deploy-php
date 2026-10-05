@@ -4,7 +4,9 @@
     RewriteEngine On
 
     # Bloquear acesso directo a pastas sensíveis (defesa em profundidade)
-    RewriteRule ^(app|config|routes|storage|database|resources|tests)/ - [F,L]
+    # NOTA: storage/portfolio/ e' publico (imagens dos projectos) — so bloquear o resto
+    RewriteRule ^(app|config|routes|database|resources|tests)/ - [F,L]
+    RewriteRule ^storage/(?!portfolio/) - [F,L]
 
     # Ficheiros e pastas reais servem-se tal como estão
     RewriteCond %{REQUEST_FILENAME} !-f
