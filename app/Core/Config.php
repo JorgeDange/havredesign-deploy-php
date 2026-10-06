@@ -94,4 +94,14 @@ final class Config
     {
         return self::obter('APP_ENV') === 'production';
     }
+
+    /**
+     * Domínio do cookie de sessão (ex.: .havredesign.ao para www + não-www).
+     * Vazio = domínio atual (comportamento padrão).
+     */
+    public static function sessionDomain(): ?string
+    {
+        $dominio = self::obter('SESSION_DOMAIN', '');
+        return $dominio !== '' ? $dominio : null;
+    }
 }

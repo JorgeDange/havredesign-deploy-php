@@ -122,12 +122,14 @@ final class Auth
         Session::destruir();
 
         if (isset($_COOKIE[self::CHAVE_LEMBRAR])) {
+            $domain = Config::sessionDomain();
             setcookie(self::CHAVE_LEMBRAR, '', [
                 'expires'  => time() - 42000,
                 'path'     => '/',
                 'httponly' => true,
                 'secure'   => Config::booleano('SESSION_SECURE_COOKIE', false),
                 'samesite' => 'Lax',
+                'domain'   => $domain ?? '',
             ]);
         }
     }
@@ -280,12 +282,14 @@ final class Auth
             [hash('sha256', $token), $userId]
         );
 
+        $domain = Config::sessionDomain();
         setcookie(self::CHAVE_LEMBRAR, $token, [
             'expires'  => time() + 30 * 86400,
             'path'     => '/',
             'httponly' => true,
             'secure'   => Config::booleano('SESSION_SECURE_COOKIE', false),
             'samesite' => 'Lax',
+            'domain'   => $domain ?? '',
         ]);
     }
 

@@ -16,6 +16,7 @@ final class Session
         }
 
         $secure = Config::booleano('SESSION_SECURE_COOKIE', false);
+        $domain = Config::sessionDomain();
 
         // Pasta de sessão própria (evita /tmp partilhado em hosting)
         $savePath = dirname(__DIR__, 2) . '/storage/sessions';
@@ -34,6 +35,10 @@ final class Session
             'httponly' => true,      // inacessível ao JavaScript
             'samesite' => 'Lax',     // Lax: permite envio em POST de formulário mesmo-origin
         ];
+
+        if ($domain !== null) {
+            $opcoes['domain'] = $domain;
+        }
 
         // PHP 7.3+ usa session_set_cookie_params com array
         session_set_cookie_params($opcoes);
@@ -118,10 +123,11 @@ final class Session
             // Apagar o cookie também
             if (ini_get('session.use_cookies')) {
                 $params = session_get_cookie_params();
+                $domain = Config::sessionDomain();
                 setcookie(session_name(), '', [
                     'expires'  => time() - 42000,
                     'path'     => $params['path'],
-                    'domain'   => $params['domain'],
+                    'domain'   => $domain ?? $params['domain'],
                     'secure'   => $params['secure'],
                     'httponly' => $params['httponly'],
                     'samesite' => 'Lax',
