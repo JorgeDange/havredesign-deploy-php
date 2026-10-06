@@ -127,7 +127,7 @@ final class Auth
                 'path'     => '/',
                 'httponly' => true,
                 'secure'   => Config::booleano('SESSION_SECURE_COOKIE', false),
-                'samesite' => 'Strict',
+                'samesite' => 'Lax',
             ]);
         }
     }
@@ -285,7 +285,7 @@ final class Auth
             'path'     => '/',
             'httponly' => true,
             'secure'   => Config::booleano('SESSION_SECURE_COOKIE', false),
-            'samesite' => 'Strict',
+            'samesite' => 'Lax',
         ]);
     }
 

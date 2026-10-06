@@ -17,6 +17,13 @@ final class Session
 
         $secure = Config::booleano('SESSION_SECURE_COOKIE', false);
 
+        // Pasta de sessão própria (evita /tmp partilhado em hosting)
+        $savePath = dirname(__DIR__, 2) . '/storage/sessions';
+        if (!is_dir($savePath)) {
+            @mkdir($savePath, 0755, true);
+        }
+        session_save_path($savePath);
+
         // Nome da sessão separado (session_set_cookie_params não aceita 'name')
         session_name(Config::obter('SESSION_NAME', 'havre_sessao'));
 
@@ -25,7 +32,7 @@ final class Session
             'path'     => '/',
             'secure'   => $secure,   // true em produção (HTTPS)
             'httponly' => true,      // inacessível ao JavaScript
-            'samesite' => 'Strict',  // protecção CSRF reforçada
+            'samesite' => 'Lax',     // Lax: permite envio em POST de formulário mesmo-origin
         ];
 
         // PHP 7.3+ usa session_set_cookie_params com array
@@ -117,7 +124,7 @@ final class Session
                     'domain'   => $params['domain'],
                     'secure'   => $params['secure'],
                     'httponly' => $params['httponly'],
-                    'samesite' => $params['samesite'] ?? 'Strict',
+                    'samesite' => 'Lax',
                 ]);
             }
         }
