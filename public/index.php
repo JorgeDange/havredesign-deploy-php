@@ -42,6 +42,9 @@ spl_autoload_register(function (string $classe): void {
 require __DIR__ . '/../app/Support/Helpers.php';
 require __DIR__ . '/../app/Support/Rotas.php';
 
+// Polyfill mbstring (hosting sem extensão)
+App\Core\MbstringPolyfill::carregar();
+
 // --------------------------------------------------------------------------
 // 3. Bootstrap
 // --------------------------------------------------------------------------

@@ -9,7 +9,8 @@ namespace App\Core;
  *
  * Transportes:
  *   - 'log'  (por omissão): grava em storage/logs/mail.log — desenvolvimento
- *   - 'smtp'/'mail': envio real quando configurado no .env
+ *   - 'mail': função mail() do PHP (se disponível)
+ *   - 'smtp': SMTP autenticado (requer MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD no .env)
  */
 final class Mailer
 {
@@ -34,17 +35,176 @@ final class Mailer
             return self::gravarNoLog($para, $assunto, $corpo);
         }
 
-        $ok = @mail($para, '=?UTF-8?B?' . base64_encode($assunto) . '?=', $corpo, $cabecalhos);
+        if ($transporte === 'smtp') {
+            return self::enviarSmtp($para, $assunto, $corpo, $cabecalhos);
+        }
 
-        if (!$ok) {
-            Logger::erro('mail.falhou', ['para' => $para, 'assunto' => $assunto]);
-            // Fallback: nunca perder o e-mail em silêncio
+        // transporte 'mail' ou outro -> função mail() nativa
+        if (function_exists('mail')) {
+            $ok = @mail($para, '=?UTF-8?B?' . base64_encode($assunto) . '?=', $corpo, $cabecalhos);
+
+            if (!$ok) {
+                Logger::erro('mail.falhou', ['para' => $para, 'assunto' => $assunto, 'transporte' => 'mail']);
+                return self::gravarNoLog($para, $assunto, $corpo);
+            }
+
+            Logger::info('mail.enviado', ['para' => $para, 'assunto' => $assunto, 'transporte' => 'mail']);
+
+            return true;
+        }
+
+        // mail() não existe -> fallback para log
+        Logger::aviso('mail.funcao_indisponivel', ['para' => $para, 'assunto' => $assunto]);
+        return self::gravarNoLog($para, $assunto, $corpo);
+    }
+
+    /**
+     * Envia via SMTP autenticado.
+     */
+    private static function enviarSmtp(string $para, string $assunto, string $corpo, string $cabecalhos): bool
+    {
+        $host     = Config::obter('MAIL_HOST');
+        $port     = (int) Config::obter('MAIL_PORT', 587);
+        $username = Config::obter('MAIL_USERNAME');
+        $password = Config::obter('MAIL_PASSWORD');
+        $encryption = Config::obter('MAIL_ENCRYPTION', 'tls'); // tls, ssl, ou vazio
+        $from     = Config::obter('MAIL_FROM_ADDRESS');
+
+        if (!$host || !$username || !$password) {
+            Logger::erro('smtp.config_falta', ['host' => $host, 'user' => $username]);
             return self::gravarNoLog($para, $assunto, $corpo);
         }
 
-        Logger::info('mail.enviado', ['para' => $para, 'assunto' => $assunto]);
+        $socket = @fsockopen(
+            ($encryption === 'ssl' ? 'ssl://' : '') . $host,
+            $port,
+            $errno,
+            $errstr,
+            10
+        );
 
-        return true;
+        if (!$socket) {
+            Logger::erro('smtp.conexao_falhou', ['host' => $host, 'port' => $port, 'erro' => $errstr]);
+            return self::gravarNoLog($para, $assunto, $corpo);
+        }
+
+        stream_set_timeout($socket, 10);
+
+        try {
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '220')) {
+                throw new \RuntimeException("SMTP banner inesperado: $resposta");
+            }
+
+            // EHLO
+            self::smtpEscrever($socket, "EHLO " . gethostname());
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '250')) {
+                throw new \RuntimeException("EHLO falhou: $resposta");
+            }
+
+            // STARTTLS se TLS
+            if ($encryption === 'tls') {
+                self::smtpEscrever($socket, 'STARTTLS');
+                $resposta = self::smtpLer($socket);
+                if (!str_starts_with($resposta, '220')) {
+                    throw new \RuntimeException("STARTTLS falhou: $resposta");
+                }
+                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                    throw new \RuntimeException('Falha ao ativar TLS');
+                }
+                // EHLO novamente após TLS
+                self::smtpEscrever($socket, "EHLO " . gethostname());
+                $resposta = self::smtpLer($socket);
+                if (!str_starts_with($resposta, '250')) {
+                    throw new \RuntimeException("EHLO pós-TLS falhou: $resposta");
+                }
+            }
+
+            // AUTH LOGIN
+            self::smtpEscrever($socket, 'AUTH LOGIN');
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '334')) {
+                throw new \RuntimeException("AUTH LOGIN falhou: $resposta");
+            }
+
+            self::smtpEscrever($socket, base64_encode($username));
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '334')) {
+                throw new \RuntimeException("Username falhou: $resposta");
+            }
+
+            self::smtpEscrever($socket, base64_encode($password));
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '235')) {
+                throw new \RuntimeException("Password falhou: $resposta");
+            }
+
+            // MAIL FROM
+            self::smtpEscrever($socket, "MAIL FROM:<$from>");
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '250')) {
+                throw new \RuntimeException("MAIL FROM falhou: $resposta");
+            }
+
+            // RCPT TO
+            self::smtpEscrever($socket, "RCPT TO:<$para>");
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '250')) {
+                throw new \RuntimeException("RCPT TO falhou: $resposta");
+            }
+
+            // DATA
+            self::smtpEscrever($socket, 'DATA');
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '354')) {
+                throw new \RuntimeException("DATA falhou: $resposta");
+            }
+
+            // Mensagem completa
+            $mensagem  = "Subject: =?UTF-8?B?" . base64_encode($assunto) . "?=\r\n";
+            $mensagem .= $cabecalhos;
+            $mensagem .= "\r\n";
+            $mensagem .= $corpo;
+            $mensagem .= "\r\n.\r\n";
+
+            self::smtpEscrever($socket, $mensagem);
+            $resposta = self::smtpLer($socket);
+            if (!str_starts_with($resposta, '250')) {
+                throw new \RuntimeException("Envio de dados falhou: $resposta");
+            }
+
+            // QUIT
+            self::smtpEscrever($socket, 'QUIT');
+            self::smtpLer($socket);
+
+            fclose($socket);
+
+            Logger::info('mail.enviado', ['para' => $para, 'assunto' => $assunto, 'transporte' => 'smtp']);
+
+            return true;
+        } catch (\Throwable $e) {
+            @fclose($socket);
+            Logger::erro('smtp.falhou', ['para' => $para, 'assunto' => $assunto, 'erro' => $e->getMessage()]);
+            return self::gravarNoLog($para, $assunto, $corpo);
+        }
+    }
+
+    private static function smtpEscrever($socket, string $comando): void
+    {
+        fwrite($socket, $comando . "\r\n");
+    }
+
+    private static function smtpLer($socket): string
+    {
+        $resposta = '';
+        while (($linha = fgets($socket, 512)) !== false) {
+            $resposta .= $linha;
+            if (strlen($linha) >= 4 && $linha[3] === ' ') {
+                break;
+            }
+        }
+        return trim($resposta);
     }
 
     /**

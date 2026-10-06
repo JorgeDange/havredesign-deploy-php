@@ -19,6 +19,9 @@ storage/cache/*
 # Anexos de testes locais (pedidos privados)
 storage/app/private/requests/*
 
+# Throttle (runtime)
+storage/app/private/throttle/*
+
 # Uploads de utilizadores (mas as imagens de servico do conteudo vao no deploy)
 storage/uploads/*
 !storage/uploads/.gitkeep
