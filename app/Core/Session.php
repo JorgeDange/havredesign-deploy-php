@@ -20,10 +20,24 @@ final class Session
 
         // Pasta de sessão própria (evita /tmp partilhado em hosting)
         $savePath = dirname(__DIR__, 2) . '/storage/sessions';
+        $savePathOk = false;
+
         if (!is_dir($savePath)) {
             @mkdir($savePath, 0755, true);
         }
-        session_save_path($savePath);
+
+        // Verificar se a pasta é gravável
+        if (is_dir($savePath) && is_writable($savePath)) {
+            session_save_path($savePath);
+            $savePathOk = true;
+        } else {
+            // Fallback: usar o padrão do PHP (geralmente /tmp)
+            // e logar aviso
+            Logger::aviso('session.save_path_nao_gravavel', [
+                'tentado' => $savePath,
+                'usando'  => session_save_path(),
+            ]);
+        }
 
         // Nome da sessão separado (session_set_cookie_params não aceita 'name')
         session_name(Config::obter('SESSION_NAME', 'havre_sessao'));
@@ -50,7 +64,27 @@ final class Session
         ini_set('session.sid_length', '48');
         ini_set('session.sid_bits_per_character', '6');
 
-        session_start();
+        // Iniciar sessão
+        $started = @session_start();
+
+        if (!$started) {
+            Logger::erro('session.start_falhou', [
+                'save_path' => session_save_path(),
+                'domain'    => $domain ?? 'default',
+            ]);
+        }
+
+        // Log de diagnóstico (apenas primeira vez por request)
+        if (!isset($_SESSION['_session_iniciada'])) {
+            Logger::info('session.iniciada', [
+                'id'        => session_id(),
+                'save_path' => session_save_path(),
+                'cookie'    => session_get_cookie_params(),
+                'domain'    => $domain ?? 'default',
+                'save_ok'   => $savePathOk,
+            ]);
+            $_SESSION['_session_iniciada'] = true;
+        }
 
         // Expansão de sessão por actividade (rolling)
         if (isset($_SESSION['_ultimo_acesso'])) {
