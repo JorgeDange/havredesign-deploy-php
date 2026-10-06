@@ -4,6 +4,12 @@
     RewriteEngine On
 
     # ------------------------------------------------------------------
+    # 0) FORÇAR HTTPS (antes de tudo — cookie Secure exige HTTPS)
+    # ------------------------------------------------------------------
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # ------------------------------------------------------------------
     # 1) Bloquear acesso directo a pastas/ficheiros internos da app
     #    (defesa em profundidade — antes de qualquer reescrita)
     #    NOTA: storage/portfolio/ via URL mapeia para public/storage/
